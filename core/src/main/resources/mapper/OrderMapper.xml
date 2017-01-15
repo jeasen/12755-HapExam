@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.demo.mapper.OrderMapper">
+    <resultMap id="BaseResultMap" type="hbi.core.demo.dto.OmOrderHeaders">
+        <id column="HEADER_ID" property="headerId"/>
+        <result column="ORDER_NUMBER" property="orderNumber" jdbcType="VARCHAR"/>
+        <result column="ORDER_DATE" property="orderDate"/>
+        <result column="ORDER_STATUS" property="orderStatus"/>
+        <association property="OrgCompanys" javaType="hbi.core.demo.dto.OrgCompanys">
+            <id column="COMPANY_ID" property="companyId"/>
+            <result column="COMPANY_NAME" property="companyName"/>
+        </association>
+        <association property="ArCustomers" javaType="hbi.core.demo.dto.ArCustomers">
+            <id column="CUSTOMER_ID" property="customerId"/>
+            <result column="CUSTOMER_NAME" property="customerName"/>
+        </association>
+        <association property="OmOrderLines" javaType="hbi.core.demo.dto.OmOrderLines">
+            <id column="CUSTOMER_ID" property="lineId"/>
+            <result column="ORDERD_QUANTITY" property="orderdQuantity"/>
+            <result column="UNIT_SELLING_PRICE" property="unitSellingPrice"/>
+        </association>
+    </resultMap>
+
+    <select id="getAllOrderHeaders" resultMap="BaseResultMap">
+		select
+        *
+        FROM
+        hap_om_order_headers hod,
+        hap_om_order_lines hol,
+        hap_ar_customers hac,
+        hap_org_companys hoc
+        WHERE  hod.COMPANY_ID = hoc.COMPANY_ID
+        and hod.HEADER_ID = hol.HEADER_ID
+        and hod.CUSTOMER_ID = hac.CUSTOMER_ID
+	</select>
+
+    <select id="setAllOrderHeaders" resultMap="BaseResultMap" parameterType="hbi.core.demo.dto.OmOrderHeaders">
+        select
+        *
+        FROM
+        hap_om_order_headers hod,
+        hap_om_order_lines hol,
+        hap_ar_customers hac,
+        hap_org_companys hoc
+        WHERE hod.COMPANY_ID = hoc.COMPANY_ID
+        and hod.HEADER_ID = hol.HEADER_ID
+        and hod.CUSTOMER_ID = hac.CUSTOMER_ID
+        <if test="orderNumber!=null">
+            and hod.ORDER_NUMBER LIKE concat('%', concat(#{orderNumber}, '%'))
+        </if>
+        <if test="orderStatus!=null">
+            and hod.ORDER_STATUS LIKE concat('%', concat(#{orderStatus}, '%'))
+        </if>
+        <if test="companyId!=null">
+            and hod.COMPANY_ID LIKE concat('%', concat(#{companyId}, '%'))
+        </if>
+        <if test="customerId!=null">
+            and hod.CUSTOMER_ID LIKE concat('%', concat(#{customerId}, '%'))
+        </if>
+    </select>
+
+    <insert id="addOrderHeaders" parameterType="List">
+          INSERT into hap_om_order_headers(ORDER_NUMBER,COMPANY_ID,ORDER_DATE,ORDER_STATUS,CUSTOMER_ID) VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+
+          ( #{orderNumber},#{companyId},#{orderDate},#{orderStatus},#{customerId})
+
+        </foreach>
+
+--           values(#{orderNumber},#{companyId},#{orderDate},#{orderStatus},#{customerId})
+--           values(121123,105,NOW(),'已接收',204)
+    </insert>
+
+</mapper>

@@ -1,0 +1,145 @@
+<#include "/include/header.html">
+    <body>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script src="${base.contextPath}/common/code?orderType=SYS.ORDER_TYPE" type="text/javascript"></script>
+
+    <script>
+        var isedit = '${RequestParameters.isedit}';
+        alert(isedit);
+        newViewModel = kendo.observable({
+            model: {},
+            orderStatus: orderType
+        });
+        //        if (isedit) {
+        $.ajax({
+            url: '${base.contextPath}/fnd/company/query?companyId=${RequestParameters.companyId!0}',
+            success: function (args) {
+                alert("succ");
+                var a0 = args.rows[0] || {};
+                for (var k in a0) {
+                    newViewModel.model.set(k, a0[k]);
+                }
+            },
+        });
+
+        //        }
+
+    </script>
+
+    <div id="page-content">
+        <form class="form-horizontal">
+
+            <div class="col-xs-12">
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">订单编号</label>
+                <div class="col-xs-2">
+                    <input id="orderNumber" type="text" data-bind="value:model.orderNumber" class="k-textbox"
+                           style="width: 100%;">
+                    <script>kendo.bind($('#orderNumber'), newViewModel);</script>
+                </div>
+
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">公司名称</label>
+                <div class="col-xs-2">
+                    <input type="text" id="companyName"
+                           style="width:100%;" data-bind="value:model.companyId">
+                    <script>
+                        $("#companyName").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_COMP")}, {
+                            query: function (e) {
+
+                            }
+                        }))
+                        kendo.bind($('#companyName'), newViewModel);
+                    </script>
+                </div>
+
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">客户名称</label>
+                <div class="col-xs-2">
+                    <input type="text" id="customerName"
+                           style="width:100%;" data-bind="value:model.customerId,text:model.positionName">
+                    <script>
+                        $("#customerName").kendoLov($.extend(${lovProvider.getLov(base.contextPath, base.locale, "LOV_CUSTOMERS")}, {
+                            query: function (e) {
+
+                            }
+                        }))
+                        kendo.bind($('#customerName'), newViewModel);
+                    </script>
+                </div>
+            </div>
+
+            <div class="col-xs-12">
+
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">订单日期</label>
+                <div class="col-xs-2">
+                    <input id="orderDate" style="width: 100%" data-bind="value:model.orderDate">
+                    <script>
+                        $('#orderDate').kendoDatePicker();
+                        kendo.bind($('#orderDate'), newViewModel);</script>
+                </div>
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">订单总金额</label>
+                <div class="col-xs-2">
+
+                    <input style="width: 100%" id="orderSale" data-bind="value:model.endDateActive"/>
+                    <script>
+                        kendo.bind($('#orderSale'), newViewModel);
+                    </script>
+                </div>
+
+                <label class="col-xs-2 control-label"
+                       style="text-align: right">订单状态</label>
+                <div class="col-xs-2">
+                    <select data-role="combobox" id="orderStatu" data-value-primitive="true"
+                            placeholder='<@spring.message "resource.type"/>' style="width:100px;"
+                            data-text-field="meaning" data-value-field="value"
+                            data-bind="source: orderStatus, value: model.orderStatus"></select>
+                    <script>kendo.bind($('#orderStatu'), newViewModel);</script>
+                </div>
+            </div>
+
+            <div class="col-sm-12" style="height:40px">
+                <span class="btn btn-primary" style="float:left;width:70px" id="saveGrid" type="submit">保存</span>
+                <span class="btn btn-default" style="float:left;width:70px" id="closeWin" type="button">提交</span>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+
+        $("#page-content").kendoValidator();
+        $("#closeWin").click(function () {
+            if (isedit) {
+                window.parent.$("#editWin").data("kendoWindow").close();
+            } else {
+                window.parent.$("#newWin").data("kendoWindow").close();
+            }
+        });
+        $("#saveGrid").click(function () {
+            if (newViewModel.model.orderNumber == '' || newViewModel.model.orderNumber == null) {
+                kendo.ui.showInfoDialog({
+                    message: '订单编号不能为空'
+                })
+            } else {
+                newViewModel.model.__status = 'add';
+                Hap.submitForm({
+                    url: '${base.contextPath}/order/update',
+                    formModel: newViewModel.model,
+                    success: function (data) {
+                        window.parent.$('#grid').data('kendoGrid').dataSource.page(1);
+                        if (isedit) {
+                            window.parent.$("#editWin").data("kendoWindow").close();
+                        } else {
+                            window.parent.$("#newWin").data("kendoWindow").close();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+    </body>
+    </html>

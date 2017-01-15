@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="hbi.core.demo.mapper.FilmMapper">
+	<resultMap id="BaseResultMap" type="hbi.core.demo.dto.Film">
+		<id column="film_id" property="film_id" jdbcType="INTEGER" />
+		<result column="title" property="title" jdbcType="VARCHAR" />
+		<result column="description" property="description" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR" />
+	</resultMap>
+
+
+	<sql id="Base_Column_List">
+		film_id, title, description, name
+	</sql>
+
+	<insert id="addFilm" parameterType="hbi.core.demo.dto.Film">
+		INSERT INTO hap_film(title,description,language_id) VALUES(#{title},#{description},#{name});
+	</insert>
+
+	<select id="selectFilmList" resultMap="BaseResultMap">
+		select f.film_id,f.title,f.description,l.`name` from
+		hap_film f,`hap_language` l
+		where f.language_id = l.language_id
+	</select>
+
+	<select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select f.film_id,f.title,f.description,l.`name` from hap_film f,`hap_language`
+		l
+		where f.hap_language_id = l.hap_language_id and f.film_id =
+		#{id,jdbcType=INTEGER}
+	</select>
+
+
+
+	<!-- 批量删除的sql -->
+	<delete id="delete" parameterType="list">
+        <![CDATA[
+            delete hap_film where film_id in
+        ]]>
+		<foreach collection="list" item="list" open="(" separator=","
+			close=")">
+			#{list}
+		</foreach>
+	</delete>
+
+	<delete id="deleteid" parameterType="java.lang.Integer">
+	DELETE from hap_film where film_id = #{id,jdbcType=INTEGER};
+	</delete>
+	
+</mapper>
